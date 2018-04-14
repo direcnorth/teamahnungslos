@@ -1,17 +1,13 @@
 import RPi.GPIO as GPIO
 import time
-import thread
 import lcddriver
-from alarm import Alarm
-from http_equipment import HttpEquipment
 
 # detect if sensor state has changed
 def check_sensor(gpio_id, state):
     input = GPIO.input(gpio_id)
 
     if state != input:
-        #print("Detected toggle on channel {}: {}".format(gpio_id, input))
-        pass
+        print("Detected toggle on channel {}: {}".format(gpio_id, input))
     return input
 
 # sensor1 is at the entrance
@@ -22,10 +18,6 @@ sensor2 = 24
 # initialize screen
 lcd = lcddriver.lcd()
 lcd.lcd_clear()
-
-# initialize http equipment
-equipment = HttpEquipment()
-equipment.get_token()
 
 # initialize GPIO including sensors
 GPIO.setmode(GPIO.BCM)
@@ -61,12 +53,6 @@ while True:
             lcd.lcd_clear()
             lcd.lcd_display_string("Visitors:", 1)
             lcd.lcd_display_string(str(in_people), 2)
-            # post alarm
-            try:
-                thread.start_new_thread(equipment.post_alarm, (Alarm.ENTERED,))
-                thread.start_new_thread(equipment.post_process_value, (in_people,))
-            except:
-                pass
             # require sensor states to change to idle mode before continuing
             while not (state_sensor1 == 0 and state_sensor2 == 0):
                 update_sensors()
@@ -81,12 +67,6 @@ while True:
                 lcd.lcd_clear()
                 lcd.lcd_display_string("Visitors:", 1)
                 lcd.lcd_display_string(str(in_people), 2)
-                # post alarm
-                try:
-                    thread.start_new_thread(equipment.post_alarm, (Alarm.LEFT,))
-                    thread.start_new_thread(equipment.post_process_value, (in_people,))
-                except:
-                    pass
             # require sensor states to change to idle mode before continuing
             while not (state_sensor1 == 0 and state_sensor2 == 0):
                 update_sensors()

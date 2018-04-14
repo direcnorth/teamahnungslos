@@ -1,0 +1,44 @@
+import RPi.GPIO as GPIO
+import time
+
+def check_sensor(gpio_id, state):
+    input = GPIO.input(gpio_id)
+
+    if state != input:
+        print("Detected toggle on channel {}: {}".format(gpio_id, input))
+        time.sleep(0.2)
+    return input
+
+def update_sensors():
+    state_sensor1 = check_sensor(sensor1, state_sensor1)
+    state_sensor2 = check_sensor(sensor2, state_sensor2)xcxcc# sensor1 is at the entrance
+# sensor2 is in the floor
+sensor1 = 23
+sensor2 = 24
+
+GPIO.setmode(GPIO.BCM)
+
+GPIO.setup(sensor1, GPIO.IN)
+GPIO.setup(sensor2, GPIO.IN)
+
+state_sensor1 = 0
+state_sensor2 = 0
+
+in_people = 0
+
+while True:
+    update_sensors()
+    while state_sensor1 == 1:
+        update_sensors()
+        if state_sensor1 == 0 and state_sensor2 == 1:
+            in_people += 1
+            print("This many people are in the room:", in_people)
+            while not (state_sensor1 == 0 and state_sensor2 == 0):
+                update_sensors()
+    while state_sensor2 == 1:
+        update_sensors()
+        if state_sensor1 == 1 and state_sensor2 == 0:
+            in_people -= 1
+            print("This many people are in the room:", in_people)
+            while not (state_sensor1 == 0 and state_sensor2 == 0):
+                update_sensors()
